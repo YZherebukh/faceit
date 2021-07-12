@@ -67,7 +67,7 @@ func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
 	newAll(web.NewResponse(w, h.log), h.user).Do(web.NewRequest(r))
 }
 
-// One handles Get One event requests by userID
+// One handles Get One user by userID requests
 func (h *Handler) One(w http.ResponseWriter, r *http.Request) {
 	newOne(web.NewResponse(w, h.log), h.user).Do(web.NewRequest(r))
 }

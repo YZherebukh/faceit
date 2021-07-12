@@ -18,7 +18,7 @@ type Handler struct {
 	check      *healthcheck.Check
 }
 
-// NewHandler creates new user handler instancce
+// NewHandler creates new healtcheck handler instancce
 func NewHandler(router *mux.Router, l logger.Logger, m middleware.Middleware, c *healthcheck.Check) {
 	h := Handler{
 		router:     router,
@@ -29,11 +29,11 @@ func NewHandler(router *mux.Router, l logger.Logger, m middleware.Middleware, c 
 
 	apiV1 := router.PathPrefix("/v1").Subrouter()
 
-	apiV1.HandleFunc("/health", h.middleware.SetContextHeader(http.HandlerFunc(h.All))).
+	apiV1.HandleFunc("/health", h.middleware.SetContextHeader(http.HandlerFunc(h.Check))).
 		Methods(http.MethodGet)
 }
 
-// All handles Get All countries requests
-func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
+// Check handles Get health check request
+func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
 	newHealth(web.NewResponse(w, h.log), h.check).Do(web.NewRequest(r))
 }

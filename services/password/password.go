@@ -4,6 +4,7 @@ package password
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/faceit/test/entity"
 )
@@ -39,7 +40,7 @@ func New(c client, h hasher) *Password {
 func (p *Password) Update(ctx context.Context, id int, new, old string) error {
 	pass, err := p.client.One(ctx, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get user's password from store, error: %w", err)
 	}
 
 	err = p.hasher.Compare(old, pass.Hash)
@@ -53,5 +54,10 @@ func (p *Password) Update(ctx context.Context, id int, new, old string) error {
 		return err
 	}
 
-	return p.client.Update(ctx, id, newHashed, salt)
+	err = p.client.Update(ctx, id, newHashed, salt)
+	if err != nil {
+		return fmt.Errorf("failed to update user's password, error: %w", err)
+	}
+
+	return nil
 }

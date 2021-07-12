@@ -39,7 +39,7 @@ func TestUpdate(t *testing.T) {
 		mockHasher.EXPECT().Salt().Return(testSalt)
 		mockHasher.EXPECT().Hash(testPasswordTwo, testSalt).Return(testPasswordHashedTwo, nil)
 
-		err := New(mockUpdate, mockHasher).Update(ctx, testUserID, testPasswordOne, testPasswordTwo)
+		err := New(mockUpdate, mockHasher).Update(ctx, testUserID, testPasswordTwo, testPasswordOne)
 		assert.Nil(t, err)
 	})
 
@@ -54,7 +54,7 @@ func TestUpdate(t *testing.T) {
 		mockHasher := mock_password.NewMockhasher(ctr)
 		mockHasher.EXPECT().Compare(testPasswordOne, testPasswordHashedOne).Return(entity.ErrInvalidPassword)
 
-		err := New(mockUpdate, mockHasher).Update(ctx, testUserID, testPasswordOne, testPasswordTwo)
+		err := New(mockUpdate, mockHasher).Update(ctx, testUserID, testPasswordTwo, testPasswordOne)
 		assert.ErrorIs(t, err, entity.ErrInvalidPassword)
 	})
 
@@ -73,7 +73,7 @@ func TestUpdate(t *testing.T) {
 		mockHasher.EXPECT().Salt().Return(testSalt)
 		mockHasher.EXPECT().Hash(testPasswordTwo, testSalt).Return(testPasswordHashedTwo, nil)
 
-		err := New(mockUpdate, mockHasher).Update(ctx, testUserID, testPasswordOne, testPasswordTwo)
+		err := New(mockUpdate, mockHasher).Update(ctx, testUserID, testPasswordTwo, testPasswordOne)
 		assert.ErrorIs(t, err, errTest)
 	})
 
@@ -87,7 +87,7 @@ func TestUpdate(t *testing.T) {
 
 		mockHasher := mock_password.NewMockhasher(ctr)
 
-		err := New(mockUpdate, mockHasher).Update(ctx, testUserID, testPasswordOne, testPasswordTwo)
+		err := New(mockUpdate, mockHasher).Update(ctx, testUserID, testPasswordTwo, testPasswordOne)
 		assert.ErrorIs(t, err, errTest)
 	})
 
@@ -104,7 +104,7 @@ func TestUpdate(t *testing.T) {
 		mockHasher.EXPECT().Salt().Return(testSalt)
 		mockHasher.EXPECT().Hash(testPasswordTwo, testSalt).Return("", errTest)
 
-		err := New(mockUpdate, mockHasher).Update(ctx, testUserID, testPasswordOne, testPasswordTwo)
+		err := New(mockUpdate, mockHasher).Update(ctx, testUserID, testPasswordTwo, testPasswordOne)
 		assert.ErrorIs(t, err, errTest)
 	})
 }
