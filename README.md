@@ -249,7 +249,10 @@ Response:
   Presumed, that notifier calls would be one  concurently by package `queue`
 
 ## Improvement on servise
-  Add integration and performance tests. Add Authentefication and authorisation mechanisms.
-  Add load balancing before service, cache for static data. Add `swagger`.
-
+  Add integration and performance tests.
+  Add Authentefication and authorisation mechanisms.
+  Add load balancing before service, cache for static data. 
+  Add `swagger`.
+  Update Logger dependency.
+  
 
