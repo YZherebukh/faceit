@@ -15,8 +15,7 @@ Samples of requests are below
   ``` 
   https://docs.docker.com/get-docker/
 ```
-  If `Docker` is installed, please, run command,s from service root directory
-  Navigare to `faceit/test/docker` and ru a command
+  If `Docker` is installed, please navigare to `faceit/test/docker` and ru a command
   ```
   docker-compose up
   ```
@@ -254,5 +253,5 @@ Response:
   Add load balancing before service, cache for static data. 
   Add `swagger`.
   Update Logger dependency.
-  
+
 
