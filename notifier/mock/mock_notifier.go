@@ -5,6 +5,7 @@
 package mock_notifier
 
 import (
+	context "context"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )
@@ -33,15 +34,15 @@ func (m *Mocknotifier) EXPECT() *MocknotifierMockRecorder {
 }
 
 // Send mocks base method
-func (m *Mocknotifier) Send(consumer []string, message []byte) error {
+func (m *Mocknotifier) Send(ctx context.Context, consumer []string, message []byte) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", consumer, message)
+	ret := m.ctrl.Call(m, "Send", ctx, consumer, message)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Send indicates an expected call of Send
-func (mr *MocknotifierMockRecorder) Send(consumer, message interface{}) *gomock.Call {
+func (mr *MocknotifierMockRecorder) Send(ctx, consumer, message interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*Mocknotifier)(nil).Send), consumer, message)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*Mocknotifier)(nil).Send), ctx, consumer, message)
 }

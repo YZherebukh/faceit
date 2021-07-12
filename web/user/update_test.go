@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"testing"
 
 	"github.com/faceit/test/entity"
@@ -25,7 +24,6 @@ const (
 
 type testCaseUpdate struct {
 	url                string
-	urlParams          map[string][]string
 	method             string
 	consumers          []string
 	input              entity.UserRequest
@@ -35,8 +33,7 @@ type testCaseUpdate struct {
 func TestUpdate(t *testing.T) {
 	t.Run("positive_200", func(t *testing.T) {
 		tc := testCaseUpdate{
-			url:       fmt.Sprintf("%s/%d", updateURL, testUserID),
-			urlParams: map[string][]string{"id": {strconv.Itoa(testUserID)}},
+			url: fmt.Sprintf("%s/%d", updateURL, testUserID),
 
 			method: http.MethodPut,
 			input: entity.UserRequest{
@@ -52,7 +49,7 @@ func TestUpdate(t *testing.T) {
 		}
 
 		ctr := gomock.NewController(t)
-		ctx := context.Background()
+		ctx := context.WithValue(context.Background(), "id", testUserID)
 
 		mockLogger := mock_logger.NewMocklog(ctr)
 		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
@@ -80,7 +77,6 @@ func TestUpdate(t *testing.T) {
 		assert.Nil(t, err)
 
 		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
-		req.PostForm = tc.urlParams
 
 		w := httptest.NewRecorder()
 
@@ -91,8 +87,7 @@ func TestUpdate(t *testing.T) {
 
 	t.Run("negative_400_user_not_found", func(t *testing.T) {
 		tc := testCaseUpdate{
-			url:       fmt.Sprintf("%s/%d", updateURL, testUserID),
-			urlParams: map[string][]string{"id": {strconv.Itoa(testUserID)}},
+			url: fmt.Sprintf("%s/%d", updateURL, testUserID),
 
 			method: http.MethodPut,
 			input: entity.UserRequest{
@@ -108,7 +103,7 @@ func TestUpdate(t *testing.T) {
 		}
 
 		ctr := gomock.NewController(t)
-		ctx := context.Background()
+		ctx := context.WithValue(context.Background(), "id", testUserID)
 
 		mockLogger := mock_logger.NewMocklog(ctr)
 		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
@@ -127,7 +122,51 @@ func TestUpdate(t *testing.T) {
 		assert.Nil(t, err)
 
 		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
-		req.PostForm = tc.urlParams
+
+		w := httptest.NewRecorder()
+
+		newUpdate(web.NewResponse(w, logger), mockClientUpdate, mockNotifier, testConsumers).Do(web.NewRequest(req))
+
+		assert.Equal(t, tc.expectedStatusCode, w.Code)
+	})
+
+	t.Run("negative_400_incorrect_password", func(t *testing.T) {
+		tc := testCaseUpdate{
+			url: fmt.Sprintf("%s/%d", updateURL, testUserID),
+
+			method: http.MethodPut,
+			input: entity.UserRequest{
+				FirstName: "David",
+				LastName:  "Bovie",
+				NickName:  "Prince",
+				Email:     "test@test.go",
+				Password:  "qwerty",
+				CountryID: 1,
+			},
+			consumers:          testConsumers,
+			expectedStatusCode: http.StatusBadRequest,
+		}
+
+		ctr := gomock.NewController(t)
+		ctx := context.WithValue(context.Background(), "id", testUserID)
+
+		mockLogger := mock_logger.NewMocklog(ctr)
+		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
+		mockLogger.EXPECT().Warningf(gomock.Any(), gomock.Any()).AnyTimes()
+
+		logger := logger.New(mockLogger)
+
+		mockClientUpdate := mock_user.NewMockupdate(ctr)
+		userUpdate := tc.input.ToUser()
+		userUpdate.ID = testUserID
+		mockClientUpdate.EXPECT().Update(ctx, userUpdate).Return(entity.ErrInvalidPassword)
+
+		mockNotifier := mock_user.NewMocknotifier(ctr)
+
+		b, err := json.Marshal(tc.input)
+		assert.Nil(t, err)
+
+		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
 
 		w := httptest.NewRecorder()
 
@@ -165,6 +204,51 @@ func TestUpdate(t *testing.T) {
 		mockClientUpdate := mock_user.NewMockupdate(ctr)
 		userUpdate := tc.input.ToUser()
 		userUpdate.ID = testUserID
+
+		mockNotifier := mock_user.NewMocknotifier(ctr)
+
+		b, err := json.Marshal(tc.input)
+		assert.Nil(t, err)
+
+		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
+
+		w := httptest.NewRecorder()
+
+		newUpdate(web.NewResponse(w, logger), mockClientUpdate, mockNotifier, testConsumers).Do(web.NewRequest(req))
+
+		assert.Equal(t, tc.expectedStatusCode, w.Code)
+	})
+
+	t.Run("negative_500_update_client_error", func(t *testing.T) {
+		tc := testCaseUpdate{
+			url: fmt.Sprintf("%s/%d", updateURL, testUserID),
+
+			method: http.MethodPut,
+			input: entity.UserRequest{
+				FirstName: "David",
+				LastName:  "Bovie",
+				NickName:  "Prince",
+				Email:     "test@test.go",
+				Password:  "qwerty",
+				CountryID: 1,
+			},
+			consumers:          testConsumers,
+			expectedStatusCode: http.StatusInternalServerError,
+		}
+
+		ctr := gomock.NewController(t)
+		ctx := context.WithValue(context.Background(), "id", testUserID)
+
+		mockLogger := mock_logger.NewMocklog(ctr)
+		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
+		mockLogger.EXPECT().Errorf(gomock.Any(), gomock.Any()).AnyTimes()
+
+		logger := logger.New(mockLogger)
+
+		mockClientUpdate := mock_user.NewMockupdate(ctr)
+		userUpdate := tc.input.ToUser()
+		userUpdate.ID = testUserID
+		mockClientUpdate.EXPECT().Update(ctx, userUpdate).Return(errTest)
 
 		mockNotifier := mock_user.NewMocknotifier(ctr)
 

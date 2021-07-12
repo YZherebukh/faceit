@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"testing"
 
 	"github.com/faceit/test/entity"
@@ -30,7 +29,6 @@ var (
 
 type testCaseUpdatePassword struct {
 	url                string
-	urlParams          map[string][]string
 	method             string
 	input              entity.PaswordRequest
 	expectedStatusCode int
@@ -39,9 +37,8 @@ type testCaseUpdatePassword struct {
 func TestUpdatePassword(t *testing.T) {
 	t.Run("positive_200", func(t *testing.T) {
 		tc := testCaseUpdatePassword{
-			url:       fmt.Sprintf(updatePasswordURL, testUserID),
-			urlParams: map[string][]string{"id": {strconv.Itoa(testUserID)}},
-			method:    http.MethodPut,
+			url:    fmt.Sprintf(updatePasswordURL, testUserID),
+			method: http.MethodPut,
 			input: entity.PaswordRequest{
 				Old: testOldPassword,
 				New: testNewPassword,
@@ -50,7 +47,7 @@ func TestUpdatePassword(t *testing.T) {
 		}
 
 		ctr := gomock.NewController(t)
-		ctx := context.Background()
+		ctx := context.WithValue(context.Background(), "id", 1)
 
 		mockLogger := mock_logger.NewMocklog(ctr)
 		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
@@ -65,7 +62,6 @@ func TestUpdatePassword(t *testing.T) {
 		assert.Nil(t, err)
 
 		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
-		req.PostForm = tc.urlParams
 
 		w := httptest.NewRecorder()
 
@@ -74,7 +70,7 @@ func TestUpdatePassword(t *testing.T) {
 		assert.Equal(t, tc.expectedStatusCode, w.Code)
 	})
 
-	t.Run("positive_400_missing_userID", func(t *testing.T) {
+	t.Run("negative_400_missing_userID", func(t *testing.T) {
 		tc := testCaseUpdatePassword{
 			url:    fmt.Sprintf(updatePasswordURL, testUserID),
 			method: http.MethodPut,
@@ -100,7 +96,6 @@ func TestUpdatePassword(t *testing.T) {
 		assert.Nil(t, err)
 
 		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
-		req.PostForm = tc.urlParams
 
 		w := httptest.NewRecorder()
 
@@ -109,11 +104,10 @@ func TestUpdatePassword(t *testing.T) {
 		assert.Equal(t, tc.expectedStatusCode, w.Code)
 	})
 
-	t.Run("positive_400_invalid_old_password", func(t *testing.T) {
+	t.Run("negative_400_invalid_old_password", func(t *testing.T) {
 		tc := testCaseUpdatePassword{
-			url:       fmt.Sprintf(updatePasswordURL, testUserID),
-			urlParams: map[string][]string{"id": {strconv.Itoa(testUserID)}},
-			method:    http.MethodPut,
+			url:    fmt.Sprintf(updatePasswordURL, testUserID),
+			method: http.MethodPut,
 			input: entity.PaswordRequest{
 				Old: "short",
 				New: testNewPassword,
@@ -122,7 +116,7 @@ func TestUpdatePassword(t *testing.T) {
 		}
 
 		ctr := gomock.NewController(t)
-		ctx := context.Background()
+		ctx := context.WithValue(context.Background(), "id", testUserID)
 
 		mockLogger := mock_logger.NewMocklog(ctr)
 		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
@@ -136,7 +130,6 @@ func TestUpdatePassword(t *testing.T) {
 		assert.Nil(t, err)
 
 		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
-		req.PostForm = tc.urlParams
 
 		w := httptest.NewRecorder()
 
@@ -145,11 +138,10 @@ func TestUpdatePassword(t *testing.T) {
 		assert.Equal(t, tc.expectedStatusCode, w.Code)
 	})
 
-	t.Run("positive_400_invalid_new_password", func(t *testing.T) {
+	t.Run("negative_400_invalid_new_password", func(t *testing.T) {
 		tc := testCaseUpdatePassword{
-			url:       fmt.Sprintf(updatePasswordURL, testUserID),
-			urlParams: map[string][]string{"id": {strconv.Itoa(testUserID)}},
-			method:    http.MethodPut,
+			url:    fmt.Sprintf(updatePasswordURL, testUserID),
+			method: http.MethodPut,
 			input: entity.PaswordRequest{
 				Old: testOldPassword,
 				New: "short",
@@ -172,7 +164,6 @@ func TestUpdatePassword(t *testing.T) {
 		assert.Nil(t, err)
 
 		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
-		req.PostForm = tc.urlParams
 
 		w := httptest.NewRecorder()
 
@@ -181,11 +172,10 @@ func TestUpdatePassword(t *testing.T) {
 		assert.Equal(t, tc.expectedStatusCode, w.Code)
 	})
 
-	t.Run("positive_400_equal_passwords", func(t *testing.T) {
+	t.Run("negative_400_equal_passwords", func(t *testing.T) {
 		tc := testCaseUpdatePassword{
-			url:       fmt.Sprintf(updatePasswordURL, testUserID),
-			urlParams: map[string][]string{"id": {strconv.Itoa(testUserID)}},
-			method:    http.MethodPut,
+			url:    fmt.Sprintf(updatePasswordURL, testUserID),
+			method: http.MethodPut,
 			input: entity.PaswordRequest{
 				Old: testOldPassword,
 				New: testOldPassword,
@@ -208,7 +198,6 @@ func TestUpdatePassword(t *testing.T) {
 		assert.Nil(t, err)
 
 		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
-		req.PostForm = tc.urlParams
 
 		w := httptest.NewRecorder()
 
@@ -217,11 +206,10 @@ func TestUpdatePassword(t *testing.T) {
 		assert.Equal(t, tc.expectedStatusCode, w.Code)
 	})
 
-	t.Run("positive_400_client_validation_failed", func(t *testing.T) {
+	t.Run("negative_400_client_validation_failed", func(t *testing.T) {
 		tc := testCaseUpdatePassword{
-			url:       fmt.Sprintf(updatePasswordURL, testUserID),
-			urlParams: map[string][]string{"id": {strconv.Itoa(testUserID)}},
-			method:    http.MethodPut,
+			url:    fmt.Sprintf(updatePasswordURL, testUserID),
+			method: http.MethodPut,
 			input: entity.PaswordRequest{
 				Old: testOldPassword,
 				New: testNewPassword,
@@ -230,7 +218,7 @@ func TestUpdatePassword(t *testing.T) {
 		}
 
 		ctr := gomock.NewController(t)
-		ctx := context.Background()
+		ctx := context.WithValue(context.Background(), "id", testUserID)
 
 		mockLogger := mock_logger.NewMocklog(ctr)
 		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
@@ -240,13 +228,48 @@ func TestUpdatePassword(t *testing.T) {
 
 		mockClientUpdatePassword := mock_user.NewMockupdatePassword(ctr)
 		mockClientUpdatePassword.EXPECT().Update(ctx, testUserID, testNewPassword, testOldPassword).
-			Return(entity.ErrValidationFailed)
+			Return(entity.ErrInvalidPassword)
 
 		b, err := json.Marshal(tc.input)
 		assert.Nil(t, err)
 
 		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
-		req.PostForm = tc.urlParams
+
+		w := httptest.NewRecorder()
+
+		newUpdatePassword(web.NewResponse(w, logger), mockClientUpdatePassword).Do(web.NewRequest(req))
+
+		assert.Equal(t, tc.expectedStatusCode, w.Code)
+	})
+
+	t.Run("negative_400_client_validation_failed", func(t *testing.T) {
+		tc := testCaseUpdatePassword{
+			url:    fmt.Sprintf(updatePasswordURL, testUserID),
+			method: http.MethodPut,
+			input: entity.PaswordRequest{
+				Old: testOldPassword,
+				New: testNewPassword,
+			},
+			expectedStatusCode: http.StatusNotFound,
+		}
+
+		ctr := gomock.NewController(t)
+		ctx := context.WithValue(context.Background(), "id", testUserID)
+
+		mockLogger := mock_logger.NewMocklog(ctr)
+		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
+		mockLogger.EXPECT().Warningf(gomock.Any(), gomock.Any()).AnyTimes()
+
+		logger := logger.New(mockLogger)
+
+		mockClientUpdatePassword := mock_user.NewMockupdatePassword(ctr)
+		mockClientUpdatePassword.EXPECT().Update(ctx, testUserID, testNewPassword, testOldPassword).
+			Return(entity.ErrNotFound)
+
+		b, err := json.Marshal(tc.input)
+		assert.Nil(t, err)
+
+		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
 
 		w := httptest.NewRecorder()
 
@@ -257,9 +280,8 @@ func TestUpdatePassword(t *testing.T) {
 
 	t.Run("negative_500_client_error", func(t *testing.T) {
 		tc := testCaseUpdatePassword{
-			url:       fmt.Sprintf(updatePasswordURL, testUserID),
-			urlParams: map[string][]string{"id": {strconv.Itoa(testUserID)}},
-			method:    http.MethodPut,
+			url:    fmt.Sprintf(updatePasswordURL, testUserID),
+			method: http.MethodPut,
 			input: entity.PaswordRequest{
 				Old: testOldPassword,
 				New: testNewPassword,
@@ -268,7 +290,7 @@ func TestUpdatePassword(t *testing.T) {
 		}
 
 		ctr := gomock.NewController(t)
-		ctx := context.Background()
+		ctx := context.WithValue(context.Background(), "id", testUserID)
 
 		mockLogger := mock_logger.NewMocklog(ctr)
 		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
@@ -284,7 +306,6 @@ func TestUpdatePassword(t *testing.T) {
 		assert.Nil(t, err)
 
 		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
-		req.PostForm = tc.urlParams
 
 		w := httptest.NewRecorder()
 

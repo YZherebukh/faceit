@@ -18,7 +18,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN go build ./cmd/faceit/main.go
+RUN go build 
 
 # Copy binary from build to main folder
 ##RUN cp ./cmd/faceit/faceit .
@@ -27,4 +27,4 @@ RUN go build ./cmd/faceit/main.go
 EXPOSE 8080
 
 # Command to run when starting the container
-CMD ["./main"]
+CMD ["./test"]

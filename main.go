@@ -15,11 +15,14 @@ import (
 	"github.com/faceit/test/logger"
 	"github.com/faceit/test/notifier"
 	"github.com/faceit/test/queue"
+	"github.com/faceit/test/services/country"
 	"github.com/faceit/test/services/hasher"
+	"github.com/faceit/test/services/health"
 	"github.com/faceit/test/services/password"
 	"github.com/faceit/test/services/user"
 	"github.com/faceit/test/store"
 	countryhandler "github.com/faceit/test/web/country"
+	healthhandler "github.com/faceit/test/web/health"
 	"github.com/faceit/test/web/middleware"
 	userhandler "github.com/faceit/test/web/user"
 
@@ -68,9 +71,9 @@ func loadService(ctx context.Context) error {
 	}
 
 	defer func() {
-		err := postgresClient.Close()
-		if err != nil {
-			log.Errorf(ctx, "failed to close DB, error: %s", err)
+		er := postgresClient.Close()
+		if er != nil {
+			log.Errorf(ctx, "failed to close DB, error: %s", er)
 		}
 	}()
 
@@ -80,15 +83,19 @@ func loadService(ctx context.Context) error {
 
 	hasher := hasher.New()
 	password := password.New(passwordStore, hasher)
-	user := user.New(userStore, hasher)
+	user := user.New(userStore, hasher, password)
+	country := country.New(countryStore)
+	health := health.New(postgresClient, log)
 
 	notifier := initNotifier(cfg.Notifier(), log)
-	queue := queue.New(notifier)
+	queue := queue.New(cfg.Queue(), notifier)
 
 	router := mux.NewRouter().StrictSlash(true)
 	middleware := middleware.New(log)
-	userhandler.NewHandler(router, log, middleware, user, countryStore, password, hasher, *queue)
-	countryhandler.NewHandler(router, log, middleware, countryStore)
+
+	userhandler.NewHandler(router, log, middleware, user, country, password, hasher, *queue)
+	countryhandler.NewHandler(router, log, middleware, country)
+	healthhandler.NewHandler(router, log, middleware, health)
 
 	server := &http.Server{
 		Addr:    cfg.Service().Port,
@@ -120,7 +127,6 @@ func loadService(ctx context.Context) error {
 	queue.Closed()
 
 	return nil
-
 }
 
 func initLog(cfg config.Logger) (logger.Logger, error) {
@@ -136,7 +142,7 @@ func initLog(cfg config.Logger) (logger.Logger, error) {
 
 func initDBClient(cfg config.DB) (*sql.DB, error) {
 	url := fmt.Sprintf(cfg.PatternURL, cfg.Host, cfg.Port, cfg.UserName, cfg.Password, cfg.Name, cfg.SSLMode)
-
+	log.Printf("connecting to %s", url)
 	db, err := sql.Open(cfg.UserName, url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database, %w", err)
@@ -157,7 +163,7 @@ func initNotifier(cfg config.Notifier, l logger.Logger) *notifier.Notifier {
 	consumers = append(consumers, cfg.OnUpdate()...)
 	consumers = append(consumers, cfg.OnDelete()...)
 
-	return notifier.New(nil, consumers, l)
+	return notifier.New(cfg, nil, consumers, l)
 }
 
 func startServer(ctx context.Context, l logger.Logger, server *http.Server, errCh chan<- error) {

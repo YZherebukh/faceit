@@ -6,10 +6,10 @@ import (
 	"github.com/faceit/test/config"
 	"github.com/faceit/test/logger"
 	"github.com/faceit/test/queue"
+	"github.com/faceit/test/services/country"
 	"github.com/faceit/test/services/hasher"
 	"github.com/faceit/test/services/password"
 	"github.com/faceit/test/services/user"
-	"github.com/faceit/test/store"
 	"github.com/faceit/test/web"
 	"github.com/faceit/test/web/middleware"
 
@@ -24,14 +24,14 @@ type Handler struct {
 	middleware  middleware.Middleware
 	queue       queue.Queue
 	user        *user.User
-	country     *store.Country
+	country     *country.Country
 	password    *password.Password
 	hssher      *hasher.Hasher
 }
 
 // NewHandler creates new user handler instancce
 func NewHandler(r *mux.Router, l logger.Logger, m middleware.Middleware,
-	u *user.User, c *store.Country, p *password.Password, hash *hasher.Hasher, q queue.Queue) {
+	u *user.User, c *country.Country, p *password.Password, hash *hasher.Hasher, q queue.Queue) {
 	h := Handler{
 		router:     r,
 		log:        l,

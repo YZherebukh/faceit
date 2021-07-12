@@ -6,7 +6,7 @@ services:
     image: "postgres:12.4"
     env_file: 
       - postgres.env
-    container_name: "my_postgres"
+    container_name: "mypostgres"
     ports:
       - 5432:5432
     hostname: mypostgres      
@@ -14,8 +14,18 @@ services:
       - postgres.env # configure postgres
     networks: 
       - my_network
-
- 
+  service:
+    image: "zherebykh/faceit_test:v1"
+    env_file:
+      - service.env
+    container_name: "my_service"
+    ports:
+      - 8080:8080
+    networks: 
+      - my_network
+    depends_on:
+      - db      
+    command: sh ./start.sh
 
 volumes:
   database-data: # named volumes can be managed easier using docker-compose

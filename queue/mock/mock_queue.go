@@ -34,13 +34,13 @@ func (m *Mocknotifier) EXPECT() *MocknotifierMockRecorder {
 }
 
 // Do mocks base method
-func (m *Mocknotifier) Do(ctx context.Context, message interface{}, consumers []string) {
+func (m *Mocknotifier) Do(ctx context.Context, consumers []string, message interface{}) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Do", ctx, message, consumers)
+	m.ctrl.Call(m, "Do", ctx, consumers, message)
 }
 
 // Do indicates an expected call of Do
-func (mr *MocknotifierMockRecorder) Do(ctx, message, consumers interface{}) *gomock.Call {
+func (mr *MocknotifierMockRecorder) Do(ctx, consumers, message interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*Mocknotifier)(nil).Do), ctx, message, consumers)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*Mocknotifier)(nil).Do), ctx, consumers, message)
 }

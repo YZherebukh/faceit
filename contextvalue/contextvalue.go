@@ -31,5 +31,6 @@ func ProcessID(ctx context.Context) string {
 	if value == nil {
 		return ""
 	}
+
 	return value.(string)
 }

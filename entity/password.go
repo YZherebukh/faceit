@@ -15,12 +15,12 @@ type PaswordRequest struct {
 }
 
 func (pr PaswordRequest) Validate() error {
-	if len(pr.Old) < 7 {
+	if len(pr.Old) < 6 {
 		return fmt.Errorf("old password value must be longer than 7 characters, error: %w",
 			ErrInvalidPassword)
 	}
 
-	if len(pr.New) < 7 {
+	if len(pr.New) < 6 {
 		return fmt.Errorf("new password value must be longer than 7 characters, error: %w",
 			ErrInvalidPassword)
 	}

@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/faceit/test/entity"
@@ -15,7 +16,7 @@ const (
 
 	createPasswordQuery = `INSERT INTO ` + passwordTable + ` ( ` + passwordParams + ` ) VALUES ($1, $2, $3);`
 	selectPassqordQuery = `SELECT ` + passwordParams + ` FROM ` + passwordTable + ` WHERE password_id = $1;`
-	updatePasswordQuery = `UPDATE ` + passwordTable + ` SET pwd = $1 AND salt = $2 WHERE password_id = $3;`
+	updatePasswordQuery = `UPDATE ` + passwordTable + ` SET pwd = $1 , salt = $2 WHERE password_id = $3;`
 	deletePassqordQuery = `DELETE FROM ` + passwordTable + ` WHERE password_id = $1;`
 )
 
@@ -49,6 +50,9 @@ func (p *Password) One(ctx context.Context, id int) (entity.Password, error) {
 		&pwd.UserID,
 		&pwd.Hash,
 		&pwd.Salt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return pwd, entity.ErrNotFound
+	}
 	if err != nil {
 		err = fmt.Errorf("query failed, %w", err)
 	}

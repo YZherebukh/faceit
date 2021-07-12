@@ -32,6 +32,14 @@ const (
 	notifierTimeOutENV         = "NOTIFIER_TIMEOUT_ENV"
 	notifierClientMaxRetryENV  = "NOTIFIER_CLIENT_MAX_RETRY_ENV"
 	notifierTimeoutIncreaceENV = "NOTIFIER_TIMEOUT_INCREACE_ENV"
+
+	queueSizeENV      = "QUEUE_SIZE_ENV"
+	goRoutinesSizeENV = "GO_ROUTINE_SIZE_ENV"
+)
+
+var (
+	queueSizeDefault      = 100
+	goRoutinesSizeDefault = 100
 )
 
 // package errors
@@ -65,31 +73,37 @@ type Logger struct {
 
 // Notifier is a struct with notifier configuration
 type Notifier struct {
-	Consumers             consumers
+	Consumers             Consumers
 	Timeout               int
 	ClientMaxRetry        int
 	ClientTimeoutIncrease int
 }
 
+// Queue is a queue config struct
+type Queue struct {
+	QueueSize      int
+	GoRoutinesSize int
+}
+
 // OnCreate returnes a list of consumers to notify on Create action
 func (n Notifier) OnCreate() []string {
-	return n.Consumers.onCreate
+	return n.Consumers.OnCreate
 }
 
 // OnUpdate returnes a list of consumers to notify on Update action
 func (n Notifier) OnUpdate() []string {
-	return n.Consumers.onUpdate
+	return n.Consumers.OnUpdate
 }
 
 // OnDelete returnes a list of consumers to notify on Delete action
 func (n Notifier) OnDelete() []string {
-	return n.Consumers.onDelete
+	return n.Consumers.OnDelete
 }
 
-type consumers struct {
-	onCreate []string
-	onUpdate []string
-	onDelete []string
+type Consumers struct {
+	OnCreate []string
+	OnUpdate []string
+	OnDelete []string
 }
 
 // Config is a struct with concurent safe public method to access a config
@@ -99,6 +113,7 @@ type Config struct {
 	db       DB
 	logger   Logger
 	notifier Notifier
+	queue    Queue
 }
 
 // New initiates a new Configuration instance
@@ -126,6 +141,8 @@ func New() (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create config, error %s", err.Error())
 	}
+
+	cfg.setQueue()
 
 	return cfg, nil
 }
@@ -177,6 +194,16 @@ func (c *Config) Notifier() Notifier {
 	return Notifier{
 		Consumers: c.notifier.Consumers,
 		Timeout:   c.notifier.Timeout,
+	}
+}
+
+func (c *Config) Queue() Queue {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	return Queue{
+		QueueSize:      c.queue.QueueSize,
+		GoRoutinesSize: c.queue.GoRoutinesSize,
 	}
 }
 
@@ -287,10 +314,10 @@ func (c *Config) setLogger() error {
 
 // setNotifier sets Notifier config
 func (c *Config) setNotifier() error {
-	consumers := consumers{
-		onCreate: getStringSliceENV(notifierCreateConsumersENV),
-		onUpdate: getStringSliceENV(notifierUpdateConsumersENV),
-		onDelete: getStringSliceENV(notifierDeleteConsumersENV),
+	consumers := Consumers{
+		OnCreate: getStringSliceENV(notifierCreateConsumersENV),
+		OnUpdate: getStringSliceENV(notifierUpdateConsumersENV),
+		OnDelete: getStringSliceENV(notifierDeleteConsumersENV),
 	}
 
 	timeOut, err := getIntENV(notifierTimeOutENV)
@@ -319,6 +346,23 @@ func (c *Config) setNotifier() error {
 	}
 
 	return nil
+}
+
+func (c *Config) setQueue() {
+	queueSize, err := getIntENV(queueSizeENV)
+	if err != nil {
+		queueSize = queueSizeDefault
+	}
+
+	goRoutineSize, err := getIntENV(goRoutinesSizeENV)
+	if err != nil {
+		goRoutineSize = goRoutinesSizeDefault
+	}
+
+	c.queue = Queue{
+		QueueSize:      queueSize,
+		GoRoutinesSize: goRoutineSize,
+	}
 }
 
 func getENV(name string) (string, error) {

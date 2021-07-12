@@ -6,7 +6,7 @@ services:
     image: "postgres:alpine"
     env_file: 
       - postgres.env
-    container_name: "my_postgres"
+    container_name: "mypostgres"
     ports:
       - 5432:5432
     env_file:

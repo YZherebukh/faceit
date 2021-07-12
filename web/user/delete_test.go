@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"testing"
 
 	"github.com/faceit/test/entity"
@@ -24,12 +23,11 @@ const (
 )
 
 var (
-	testPassword = "qwerty"
+	testPassword = "qwertyui"
 )
 
 type testCaseDelete struct {
 	url                string
-	urlParams          map[string][]string
 	method             string
 	consumers          []string
 	input              entity.UserRequest
@@ -39,9 +37,8 @@ type testCaseDelete struct {
 func TestDelete(t *testing.T) {
 	t.Run("positive_200", func(t *testing.T) {
 		tc := testCaseDelete{
-			url:       fmt.Sprintf("%s/%d", deleteURL, testUserID),
-			urlParams: map[string][]string{"id": {strconv.Itoa(testUserID)}},
-			method:    http.MethodDelete,
+			url:    fmt.Sprintf("%s/%d", deleteURL, testUserID),
+			method: http.MethodDelete,
 			input: entity.UserRequest{
 				Password:  testPassword,
 				CountryID: 1,
@@ -51,7 +48,7 @@ func TestDelete(t *testing.T) {
 		}
 
 		ctr := gomock.NewController(t)
-		ctx := context.Background()
+		ctx := context.WithValue(context.Background(), "id", testUserID)
 
 		mockLogger := mock_logger.NewMocklog(ctr)
 		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
@@ -81,7 +78,7 @@ func TestDelete(t *testing.T) {
 		assert.Nil(t, err)
 
 		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
-		req.PostForm = tc.urlParams
+
 		w := httptest.NewRecorder()
 
 		newDelete(web.NewResponse(w, logger), mockClientDelete, mockNotifier, testConsumers).Do(web.NewRequest(req))
@@ -89,11 +86,10 @@ func TestDelete(t *testing.T) {
 		assert.Equal(t, tc.expectedStatusCode, w.Code)
 	})
 
-	t.Run("positive_404_user_not_found", func(t *testing.T) {
+	t.Run("negative_404_user_not_found", func(t *testing.T) {
 		tc := testCaseDelete{
-			url:       fmt.Sprintf("%s/%d", deleteURL, testUserID),
-			urlParams: map[string][]string{"id": {strconv.Itoa(testUserID)}},
-			method:    http.MethodDelete,
+			url:    fmt.Sprintf("%s/%d", deleteURL, testUserID),
+			method: http.MethodDelete,
 			input: entity.UserRequest{
 				Password:  testPassword,
 				CountryID: 1,
@@ -103,7 +99,7 @@ func TestDelete(t *testing.T) {
 		}
 
 		ctr := gomock.NewController(t)
-		ctx := context.Background()
+		ctx := context.WithValue(context.Background(), "id", testUserID)
 
 		mockLogger := mock_logger.NewMocklog(ctr)
 		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
@@ -124,7 +120,7 @@ func TestDelete(t *testing.T) {
 		assert.Nil(t, err)
 
 		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
-		req.PostForm = tc.urlParams
+
 		w := httptest.NewRecorder()
 
 		newDelete(web.NewResponse(w, logger), mockClientDelete, mockNotifier, testConsumers).Do(web.NewRequest(req))
@@ -132,7 +128,49 @@ func TestDelete(t *testing.T) {
 		assert.Equal(t, tc.expectedStatusCode, w.Code)
 	})
 
-	t.Run("positive_400_missing_userID", func(t *testing.T) {
+	t.Run("negative_404_user_not_found", func(t *testing.T) {
+		tc := testCaseDelete{
+			url:    fmt.Sprintf("%s/%d", deleteURL, testUserID),
+			method: http.MethodDelete,
+			input: entity.UserRequest{
+				Password:  testPassword,
+				CountryID: 1,
+			},
+			consumers:          testConsumers,
+			expectedStatusCode: http.StatusBadRequest,
+		}
+
+		ctr := gomock.NewController(t)
+		ctx := context.WithValue(context.Background(), "id", testUserID)
+
+		mockLogger := mock_logger.NewMocklog(ctr)
+		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
+		mockLogger.EXPECT().Warningf(gomock.Any(), gomock.Any()).AnyTimes()
+
+		logger := logger.New(mockLogger)
+
+		mockClientDelete := mock_user.NewMockdelete(ctr)
+
+		deleteUser := tc.input
+		deleteUser.ID = testUserID
+
+		mockClientDelete.EXPECT().Delete(ctx, deleteUser.ToUser()).Return(entity.ErrInvalidPassword)
+
+		mockNotifier := mock_user.NewMocknotifier(ctr)
+
+		b, err := json.Marshal(tc.input)
+		assert.Nil(t, err)
+
+		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
+
+		w := httptest.NewRecorder()
+
+		newDelete(web.NewResponse(w, logger), mockClientDelete, mockNotifier, testConsumers).Do(web.NewRequest(req))
+
+		assert.Equal(t, tc.expectedStatusCode, w.Code)
+	})
+
+	t.Run("negative_400_missing_userID", func(t *testing.T) {
 		tc := testCaseDelete{
 			url:    fmt.Sprintf("%s/%d", deleteURL, testUserID),
 			method: http.MethodDelete,
@@ -164,7 +202,7 @@ func TestDelete(t *testing.T) {
 		assert.Nil(t, err)
 
 		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
-		req.PostForm = tc.urlParams
+
 		w := httptest.NewRecorder()
 
 		newDelete(web.NewResponse(w, logger), mockClientDelete, mockNotifier, testConsumers).Do(web.NewRequest(req))
@@ -174,9 +212,8 @@ func TestDelete(t *testing.T) {
 
 	t.Run("negative_500", func(t *testing.T) {
 		tc := testCaseDelete{
-			url:       fmt.Sprintf("%s/%d", deleteURL, testUserID),
-			urlParams: map[string][]string{"id": {strconv.Itoa(testUserID)}},
-			method:    http.MethodDelete,
+			url:    fmt.Sprintf("%s/%d", deleteURL, testUserID),
+			method: http.MethodDelete,
 			input: entity.UserRequest{
 				Password:  testPassword,
 				CountryID: 1,
@@ -186,7 +223,7 @@ func TestDelete(t *testing.T) {
 		}
 
 		ctr := gomock.NewController(t)
-		ctx := context.Background()
+		ctx := context.WithValue(context.Background(), "id", testUserID)
 
 		mockLogger := mock_logger.NewMocklog(ctr)
 		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
@@ -207,7 +244,7 @@ func TestDelete(t *testing.T) {
 		assert.Nil(t, err)
 
 		req := httptest.NewRequest(tc.method, tc.url, bytes.NewReader(b)).WithContext(ctx)
-		req.PostForm = tc.urlParams
+
 		w := httptest.NewRecorder()
 
 		newDelete(web.NewResponse(w, logger), mockClientDelete, mockNotifier, testConsumers).Do(web.NewRequest(req))

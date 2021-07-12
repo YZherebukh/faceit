@@ -19,6 +19,7 @@ type update interface {
 	Update(ctx context.Context, u entity.User) error
 }
 
+// Update is a update user endpoint struct
 type Update struct {
 	do        update
 	resp      *web.Response
@@ -35,6 +36,7 @@ func newUpdate(r *web.Response, u update, n notifier, consumers []string) *Updat
 	}
 }
 
+// Do is getting user's id from URL, updates user and sending a notification
 func (u *Update) Do(r *web.Request) {
 	ctx := r.Context()
 
@@ -58,6 +60,10 @@ func (u *Update) Do(r *web.Request) {
 	err = u.do.Update(ctx, user)
 	if errors.Is(err, entity.ErrNotFound) {
 		u.resp.NotFound(ctx, err)
+		return
+	}
+	if errors.Is(err, entity.ErrInvalidPassword) {
+		u.resp.BadRequest(ctx, err)
 		return
 	}
 	if err != nil {

@@ -77,7 +77,7 @@ func TestAll(t *testing.T) {
 		logger := logger.New(mockLogger)
 
 		mockClientAll := mock_user.NewMockall(ctr)
-		mockClientAll.EXPECT().All(ctx, tc.filter, tc.title).Return([]entity.User{testUser}, nil)
+		mockClientAll.EXPECT().All(ctx, tc.title, tc.filter).Return([]entity.User{testUser}, nil)
 
 		req := httptest.NewRequest(tc.method, tc.url, nil).WithContext(ctx)
 		w := httptest.NewRecorder()
@@ -89,7 +89,7 @@ func TestAll(t *testing.T) {
 
 	t.Run("positive_200_with_filters", func(t *testing.T) {
 		tc := testCaseAll{
-			url:                fmt.Sprintf("%s?title=%s&filter=%s", allURL, testFilter, testTitle),
+			url:                fmt.Sprintf("%s?title=%s&filter=%s", allURL, testTitle, testFilter),
 			method:             http.MethodGet,
 			filter:             testFilter,
 			title:              testTitle,
@@ -117,7 +117,7 @@ func TestAll(t *testing.T) {
 
 	t.Run("positive_204_no_users", func(t *testing.T) {
 		tc := testCaseAll{
-			url:                fmt.Sprintf("%s?title=%s&filter=%s", allURL, testFilter, testTitle),
+			url:                fmt.Sprintf("%s?title=%s&filter=%s", allURL, testTitle, testFilter),
 			method:             http.MethodGet,
 			filter:             testFilter,
 			title:              testTitle,
@@ -142,9 +142,9 @@ func TestAll(t *testing.T) {
 		tc.checkresult(t, w)
 	})
 
-	t.Run("negative_client_error", func(t *testing.T) {
+	t.Run("negative_500_client_error", func(t *testing.T) {
 		tc := testCaseAll{
-			url:                fmt.Sprintf("%s?title=%s&filter=%s", allURL, testFilter, testTitle),
+			url:                fmt.Sprintf("%s?title=%s&filter=%s", allURL, testTitle, testFilter),
 			method:             http.MethodGet,
 			filter:             testFilter,
 			title:              testTitle,

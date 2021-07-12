@@ -1,41 +1,55 @@
 package hasher
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
+	"github.com/faceit/test/entity"
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Hasher is a hasher struct
 type Hasher struct {
-	salt   string
-	hashed []byte
 }
 
+// New create new Hasher instance
 func New() *Hasher {
-	return &Hasher{
-		salt: strconv.Itoa(bcrypt.MinCost),
-	}
+	return &Hasher{}
 }
 
-func (h *Hasher) HashAndSalt(password string) error {
-	saltInt, err := strconv.Atoi(h.salt)
+// Hash salts passwrd with salt and hashes it
+func (h *Hasher) Hash(password, salt string) (string, error) {
+	saltInt, err := strconv.Atoi(salt)
 	if err != nil {
-		return fmt.Errorf("unsupported salt format, %s, %w", h.salt, err)
+		return "", fmt.Errorf("unsupported salt format, %s, %w", salt, err)
 	}
 
-	h.hashed, err = bcrypt.GenerateFromPassword([]byte(password), saltInt)
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), saltInt)
 	if err != nil {
-		return fmt.Errorf("hashing password failed, error: %w", err)
+		return "", fmt.Errorf("hashing password failed, error: %w", err)
+	}
+
+	return string(hashed), nil
+}
+
+// Salt returnes hasher salt
+func (h *Hasher) Salt() string {
+	return strconv.Itoa(bcrypt.MinCost)
+}
+
+// Compare compares hashed and unhashed password
+func (h *Hasher) Compare(password, hashed string) error {
+	byteHash := []byte(hashed)
+
+	err := bcrypt.CompareHashAndPassword(byteHash, []byte(password))
+	if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+		return entity.ErrInvalidPassword
+	}
+
+	if err != nil {
+		return fmt.Errorf("filed to compare passwords, error: %w", err)
 	}
 
 	return nil
-}
-
-func (h *Hasher) Salt() string {
-	return h.salt
-}
-
-func (h *Hasher) Hashed() string {
-	return string(h.hashed)
 }

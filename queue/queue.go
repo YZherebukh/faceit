@@ -6,11 +6,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/faceit/test/config"
 	"github.com/faceit/test/entity"
 )
 
 type notifier interface {
-	Do(ctx context.Context, message interface{}, consumers []string)
+	Do(ctx context.Context, consumers []string, message interface{})
 }
 
 // Queue is a queue implementation
@@ -23,10 +24,10 @@ type Queue struct {
 }
 
 // New creates new queue
-func New(n notifier) *Queue {
+func New(cfg config.Queue, n notifier) *Queue {
 	q := &Queue{
-		addCh:      make(chan struct{}, 1000),
-		popCh:      make(chan struct{}, 1000),
+		addCh:      make(chan struct{}, cfg.QueueSize),
+		popCh:      make(chan struct{}, cfg.GoRoutinesSize),
 		addMessage: make(chan entity.NotifierMessage, 1),
 		popMessage: make(chan entity.NotifierMessage, 1),
 		notifier:   n,
@@ -63,7 +64,7 @@ func (q Queue) pop() {
 		go func(message entity.NotifierMessage) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Minute))
 			defer cancel()
-			q.notifier.Do(ctx, message.Message, message.Consumers)
+			q.notifier.Do(ctx, message.Consumers, message.Message)
 			<-q.popCh
 		}(message)
 	}
@@ -71,7 +72,7 @@ func (q Queue) pop() {
 
 // Close closing queue add channel
 func (q Queue) Closed() {
-	for len(q.popMessage) != 0 && len(q.addMessage) != 0 {
+	for len(q.addCh) != 0 && len(q.popCh) != 0 {
 
 	}
 

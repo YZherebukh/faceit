@@ -5,26 +5,34 @@ package notifier
 import (
 	"context"
 	"encoding/json"
+	"time"
 
+	"github.com/faceit/test/config"
 	"github.com/faceit/test/logger"
 )
 
 type notifier interface {
-	Send(consumer []string, message []byte) error
+	Send(ctx context.Context, consumer []string, message []byte) error
 }
 
 // Notifier is a notifier struct
 type Notifier struct {
-	notifier
-	consumers    []string
-	consumersMap map[string]struct{}
-	log          logger.Logger
+	notifier              notifier
+	timeout               int
+	clientMaxRetry        int
+	clientTimeoutIncrease int
+	consumers             []string
+	consumersMap          map[string]struct{}
+	log                   logger.Logger
 }
 
-func New(n notifier, consumers []string, l logger.Logger) *Notifier {
+func New(cfg config.Notifier, n notifier, consumers []string, l logger.Logger) *Notifier {
 	notifier := &Notifier{
-		notifier: n,
-		log:      l,
+		notifier:              n,
+		log:                   l,
+		timeout:               cfg.Timeout,
+		clientMaxRetry:        cfg.ClientMaxRetry,
+		clientTimeoutIncrease: cfg.ClientTimeoutIncrease,
 	}
 
 	notifier.consumersMap = make(map[string]struct{})
@@ -41,7 +49,10 @@ func New(n notifier, consumers []string, l logger.Logger) *Notifier {
 
 // Do sends a messages to one or many consumers
 // if consumers slice is empty, would send messages to all consumers
-func (n *Notifier) Do(ctx context.Context, message interface{}, consumers []string) {
+func (n *Notifier) Do(ctx context.Context, consumers []string, message interface{}) {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(n.timeout))
+	defer cancel()
+
 	messageByte, err := json.Marshal(message)
 	if err != nil {
 		n.log.Errorf(ctx, "failed to marshal message %#v, error: %w", message, err)
@@ -54,15 +65,15 @@ func (n *Notifier) Do(ctx context.Context, message interface{}, consumers []stri
 		return
 	}
 
-	err = n.Send(cc, messageByte)
+	err = n.sendWithRetry(ctx, cc, messageByte)
 	if err != nil {
-		n.log.Errorf(ctx, "failed to send message to %#v, error: %w", cc, err)
+		n.log.Errorf(ctx, "after %d retries still failed to send message, error: ", err)
 	}
 }
 
 func (n *Notifier) getConsumers(cc []string) []string {
-	if len(cc) < 0 {
-		return n.consumers
+	if len(cc) == 0 {
+		return cc
 	}
 
 	consumers := make([]string, 0, len(n.consumers))
@@ -74,4 +85,27 @@ func (n *Notifier) getConsumers(cc []string) []string {
 	}
 
 	return consumers
+}
+
+func (n *Notifier) sendWithRetry(ctx context.Context, consumers []string, message []byte) error {
+	var (
+		i   int
+		err error
+	)
+
+	for i < n.clientMaxRetry {
+		err = n.notifier.Send(ctx, consumers, message)
+		if err != nil {
+			n.log.Warningf(ctx, "failed to end message to %#v, error: %w", consumers, err)
+
+			time.Sleep(time.Duration(n.clientTimeoutIncrease*i) * time.Second)
+
+			i++
+			continue
+		}
+
+		return nil
+	}
+
+	return err
 }

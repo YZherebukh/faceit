@@ -14,6 +14,7 @@ type all interface {
 	All(ctx context.Context) ([]entity.Country, error)
 }
 
+// All is a All countries endpoint struct
 type All struct {
 	do   all
 	resp *web.Response
@@ -26,6 +27,7 @@ func newAll(r *web.Response, a all) *All {
 	}
 }
 
+// Do returnes a list of all countries
 func (a *All) Do(r *web.Request) {
 	ctx := r.Context()
 

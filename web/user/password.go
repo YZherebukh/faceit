@@ -15,6 +15,7 @@ type updatePassword interface {
 	Update(ctx context.Context, id int, new, old string) error
 }
 
+// UpdatePassword is a update user password endpoint struct
 type UpdatePassword struct {
 	do   updatePassword
 	resp *web.Response
@@ -27,6 +28,7 @@ func newUpdatePassword(r *web.Response, u updatePassword) *UpdatePassword {
 	}
 }
 
+// Do is getting user's id from URL and updates user's password
 func (u *UpdatePassword) Do(r *web.Request) {
 	ctx := r.Context()
 
@@ -51,11 +53,14 @@ func (u *UpdatePassword) Do(r *web.Request) {
 	}
 
 	err = u.do.Update(ctx, *id, reqBody.New, reqBody.Old)
-	if errors.Is(err, entity.ErrValidationFailed) {
+	if errors.Is(err, entity.ErrInvalidPassword) {
 		u.resp.BadRequest(ctx, err)
 		return
 	}
-
+	if errors.Is(err, entity.ErrNotFound) {
+		u.resp.NotFound(ctx, err)
+		return
+	}
 	if err != nil {
 		u.resp.InternalServerError(ctx, err)
 		return

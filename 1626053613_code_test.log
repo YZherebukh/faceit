@@ -1,0 +1,11 @@
+INFO : 2021/07/12 04:33:33.190922 logger.go:41: processID:, starting HTTP listener...
+INFO : 2021/07/12 04:33:35.781357 logger.go:41: processID:54ccb806-c7c6-4e41-b9a1-1a20d9f87be6, request DELETE:/v1/user/1 received.
+ERROR: 2021/07/12 04:33:35.790524 logger.go:33: processID:54ccb806-c7c6-4e41-b9a1-1a20d9f87be6, request failed, error: invalid password
+INFO : 2021/07/12 04:33:35.790581 logger.go:41: processID:54ccb806-c7c6-4e41-b9a1-1a20d9f87be6, sending status 500
+INFO : 2021/07/12 04:33:56.588254 logger.go:41: processID:530ea0a0-003a-46be-9de6-401f3bbd31bb, request GET:/v1/user?filter=Benin&title=country received.
+INFO : 2021/07/12 04:33:56.598638 logger.go:41: processID:530ea0a0-003a-46be-9de6-401f3bbd31bb, sending status 200
+INFO : 2021/07/12 04:34:14.270804 logger.go:41: processID:df6150c5-5319-4a8c-a3a9-c033ff0d1081, request DELETE:/v1/user/32 received.
+WARN : 2021/07/12 04:34:14.274352 logger.go:49: processID:df6150c5-5319-4a8c-a3a9-c033ff0d1081, bad request, message: not found
+INFO : 2021/07/12 04:34:14.274396 logger.go:41: processID:df6150c5-5319-4a8c-a3a9-c033ff0d1081, sending status 404
+INFO : 2021/07/12 04:41:12.854300 logger.go:41: processID:, stopping service
+ERROR: 2021/07/12 04:41:12.854888 logger.go:33: processID:, failed to listen and serve, error: http: Server closed

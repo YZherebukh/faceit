@@ -86,18 +86,19 @@ func (m *Mockhasher) EXPECT() *MockhasherMockRecorder {
 	return m.recorder
 }
 
-// HashAndSalt mocks base method
-func (m *Mockhasher) HashAndSalt(password string) error {
+// Hash mocks base method
+func (m *Mockhasher) Hash(password, salt string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "HashAndSalt", password)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "Hash", password, salt)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// HashAndSalt indicates an expected call of HashAndSalt
-func (mr *MockhasherMockRecorder) HashAndSalt(password interface{}) *gomock.Call {
+// Hash indicates an expected call of Hash
+func (mr *MockhasherMockRecorder) Hash(password, salt interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HashAndSalt", reflect.TypeOf((*Mockhasher)(nil).HashAndSalt), password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hash", reflect.TypeOf((*Mockhasher)(nil).Hash), password, salt)
 }
 
 // Salt mocks base method
@@ -114,16 +115,16 @@ func (mr *MockhasherMockRecorder) Salt() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Salt", reflect.TypeOf((*Mockhasher)(nil).Salt))
 }
 
-// Hashed mocks base method
-func (m *Mockhasher) Hashed() string {
+// Compare mocks base method
+func (m *Mockhasher) Compare(password, hashed string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Hashed")
-	ret0, _ := ret[0].(string)
+	ret := m.ctrl.Call(m, "Compare", password, hashed)
+	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Hashed indicates an expected call of Hashed
-func (mr *MockhasherMockRecorder) Hashed() *gomock.Call {
+// Compare indicates an expected call of Compare
+func (mr *MockhasherMockRecorder) Compare(password, hashed interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hashed", reflect.TypeOf((*Mockhasher)(nil).Hashed))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Compare", reflect.TypeOf((*Mockhasher)(nil).Compare), password, hashed)
 }

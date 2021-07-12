@@ -14,6 +14,7 @@ type one interface {
 	One(ctx context.Context, id int) (entity.User, error)
 }
 
+// One is a one user endpoint struct
 type One struct {
 	do   one
 	resp *web.Response
@@ -26,6 +27,7 @@ func newOne(r *web.Response, o one) *One {
 	}
 }
 
+// Do is getting user's id from URL and returning a user with that ID as a response
 func (o *One) Do(r *web.Request) {
 	ctx := r.Context()
 

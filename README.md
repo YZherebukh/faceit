@@ -16,17 +16,17 @@ Samples of requests are below
   https://docs.docker.com/get-docker/
 ```
   If `Docker` is installed, please, run command,s from service root directory
+  Navigare to `faceit/test/docker` and ru a command
   ```
-  docker-compose -f docker/docker-compose.yaml up
-``` 
-  or 
+  docker-compose up
   ```
-  start_docker.sh
+
+  PostgresDB and service would start. Service is wirkig on port `8080` and DB on `5432`, so it shuld be available on your computer
+
 ```
 
-  This command will run 3 docker containers on a local computer. 
+  This command will run 2 docker containers on a local computer. 
   - container with `postgres` (service DB)
-  - container with `dependencies` (will run migrations)
   - container with `service` (expose port :8080)
 
   ### Localy (macos and linux)
@@ -47,7 +47,7 @@ This script will start a docker container, install migration tool `dbmate`, run 
     {
         "name": "postgres",
         "healthy": true,
-        "time": "2020-07-20T02:59:34.105781Z"
+        "time": "2009-11-10T23:00:00Z"
     }
 ]
 ```
@@ -146,8 +146,8 @@ Response:
   Body:
 ```javascript
 {
-   "new_password":"abcd",
-   "old_password":"cdba"
+   "old":"abcd",
+   "new":"cdba"
 }
 ```
 
@@ -162,6 +162,13 @@ Response:
 
   Request:
 ```DELETE: http://localhost:8080/v1/user/{id}```
+ 
+  Body:
+```javascript
+{
+   "password":"qwertyui"
+}
+```
 
   Response: 
   ```
@@ -169,7 +176,7 @@ Response:
 ```
 
   ### Get All users
-  Get all users retrives information about all users, stored in database. Users can be filtered by `counrty`, `first_nae`, `last_name` and `nick_name`,
+  Get all users retrives information about all users, stored in database. Users can be filtered by `counrty`, `firstNae`, `lastName` `nickName` and `email`,
   as request accepts query parameters `title` and `filter`. 
   As an improvement, paggination should be added, and possibility to use more, than one filter by request.
 
@@ -220,7 +227,7 @@ Response:
   It can provide a good mechanism for working with user information and any other related tada, and quick access to it.
   In current implementation, 3 tables are used. 
     
-  Table `countries` to store list of countries, just to keep country management for all users the same. Presumably, during
+  Table `countries` to store list of countries, just to keep country management for all users the same. Presumably, before
   `create` or `update` users requests, UI should make an http call to get list of all countries, and allow user to chose 
   one from it
 
@@ -232,16 +239,16 @@ Response:
 
   ## Service
   A web service is desinged to provide a CRUD operations on `User` entity. A multiple nodes can be added, with load balancer and 
-  distributed cache before service (no cache implementation at this moment). It is designed to be able to change Database engine, if there 
+  distributed cache before service (no cache implementation at this moment). It is designed to be able to change Database engine(used database/sql interface), if there 
   is a need for that, without changing buisenes logick of the service.   
 
   ## Notifier
   Notifier package providing an interface, which will allow to notify other services about events, that have happened in current service.
   Based on configuration and interface implementation, differet approaches and protocols can be used, to comunicate with different services.
-  `httpclient` implementation, which is provided, creates a simle `http.Client` and notifies services via `http`.
+  Presumed, that notifier calls would be one  concurently by package `queue`
 
 ## Improvement on servise
-  Add unit tests. Add config with enviropment variables. Add Authentefication and authorisation mechanisms.
+  Add integration and performance tests. Add Authentefication and authorisation mechanisms.
   Add load balancing before service, cache for static data. Add `swagger`.
 
 

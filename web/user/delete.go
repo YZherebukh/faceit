@@ -18,6 +18,7 @@ type delete interface {
 	Delete(ctx context.Context, user entity.User) error
 }
 
+// Delete is a delete users endpoint struct
 type Delete struct {
 	do        delete
 	resp      *web.Response
@@ -34,6 +35,7 @@ func newDelete(r *web.Response, d delete, n notifier, consumers []string) *Delet
 	}
 }
 
+// Do is getting user's id from URL and deletes user with that ID
 func (d *Delete) Do(r *web.Request) {
 	ctx := r.Context()
 
@@ -57,6 +59,10 @@ func (d *Delete) Do(r *web.Request) {
 	err = d.do.Delete(ctx, deleteUser)
 	if errors.Is(err, entity.ErrNotFound) {
 		d.resp.NotFound(ctx, err)
+		return
+	}
+	if errors.Is(err, entity.ErrInvalidPassword) {
+		d.resp.BadRequest(ctx, err)
 		return
 	}
 	if err != nil {

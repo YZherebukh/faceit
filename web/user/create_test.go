@@ -61,7 +61,7 @@ func TestCreate(t *testing.T) {
 				LastName:  "Bovie",
 				NickName:  "Prince",
 				Email:     "test@test.go",
-				Password:  "qwerty",
+				Password:  "qwertyui",
 				CountryID: 1,
 			},
 			expectedResponse:   &createResponse{ID: 1},
@@ -102,7 +102,7 @@ func TestCreate(t *testing.T) {
 		tc.checkresult(t, w)
 	})
 
-	t.Run("positive_400_missing_Firstname", func(t *testing.T) {
+	t.Run("negative_400_missing_Firstname", func(t *testing.T) {
 		tc := testCaseCreate{
 			url:    createURL,
 			method: http.MethodPost,
@@ -110,7 +110,7 @@ func TestCreate(t *testing.T) {
 				LastName:  "Bovie",
 				NickName:  "Prince",
 				Email:     "test@test.go",
-				Password:  "qwerty",
+				Password:  "qwertyui",
 				CountryID: 1,
 			},
 			consumers:          testConsumers,
@@ -141,7 +141,7 @@ func TestCreate(t *testing.T) {
 		tc.checkresult(t, w)
 	})
 
-	t.Run("positive_400_missing_LastName", func(t *testing.T) {
+	t.Run("negative_400_missing_LastName", func(t *testing.T) {
 		tc := testCaseCreate{
 			url:    createURL,
 			method: http.MethodPost,
@@ -149,7 +149,7 @@ func TestCreate(t *testing.T) {
 				FirstName: "David",
 				NickName:  "Prince",
 				Email:     "test@test.go",
-				Password:  "qwerty",
+				Password:  "qwertyui",
 				CountryID: 1,
 			},
 			consumers:          testConsumers,
@@ -180,7 +180,7 @@ func TestCreate(t *testing.T) {
 		tc.checkresult(t, w)
 	})
 
-	t.Run("positive_400_missing_NickName", func(t *testing.T) {
+	t.Run("negative_400_missing_NickName", func(t *testing.T) {
 		tc := testCaseCreate{
 			url:    createURL,
 			method: http.MethodPost,
@@ -188,7 +188,7 @@ func TestCreate(t *testing.T) {
 				FirstName: "David",
 				LastName:  "Bovie",
 				Email:     "test@test.go",
-				Password:  "qwerty",
+				Password:  "qwertyui",
 				CountryID: 1,
 			},
 			consumers:          testConsumers,
@@ -219,7 +219,7 @@ func TestCreate(t *testing.T) {
 		tc.checkresult(t, w)
 	})
 
-	t.Run("positive_400_missing_email", func(t *testing.T) {
+	t.Run("negative_400_missing_email", func(t *testing.T) {
 		tc := testCaseCreate{
 			url:    createURL,
 			method: http.MethodPost,
@@ -227,7 +227,7 @@ func TestCreate(t *testing.T) {
 				FirstName: "David",
 				LastName:  "Bovie",
 				NickName:  "Prince",
-				Password:  "qwerty",
+				Password:  "qwertyui",
 				CountryID: 1,
 			},
 			consumers:          testConsumers,
@@ -267,7 +267,7 @@ func TestCreate(t *testing.T) {
 				LastName:  "Bovie",
 				NickName:  "Prince",
 				Email:     "test@test.go",
-				Password:  "qwerty",
+				Password:  "qwertyui",
 				CountryID: 1,
 			},
 			consumers:          testConsumers,

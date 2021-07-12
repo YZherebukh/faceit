@@ -18,6 +18,7 @@ type User struct {
 	CountryID int
 }
 
+// ToResponse is transforming User struct to UserResponse struct
 func (u User) ToResponse() UserResponse {
 	return UserResponse{
 		ID:        u.ID,
@@ -29,6 +30,7 @@ func (u User) ToResponse() UserResponse {
 	}
 }
 
+// UserResponse is a user response struct
 type UserResponse struct {
 	ID        int    `jspn:"id"`
 	FirstName string `jspn:"firstNmae"`
@@ -38,11 +40,13 @@ type UserResponse struct {
 	Country   string `jspn:"country"`
 }
 
+// UserNotification is a user notification struct
 type UserNotification struct {
 	User   UserResponse
 	Action string `json:"action"`
 }
 
+// UserRequest is a user request struct
 type UserRequest struct {
 	ID        int    `json:"id,omitempty"`
 	FirstName string `json:"firstNmae"`
@@ -53,6 +57,7 @@ type UserRequest struct {
 	CountryID int    `json:"country"`
 }
 
+// ToUser transformes UserRequest struct to User struct
 func (ur UserRequest) ToUser() User {
 	return User{
 		ID:        ur.ID,
@@ -64,6 +69,8 @@ func (ur UserRequest) ToUser() User {
 		CountryID: ur.CountryID,
 	}
 }
+
+// Validate validates user password
 func (u UserRequest) Validate() error {
 	switch "" {
 	case u.FirstName:
@@ -72,10 +79,12 @@ func (u UserRequest) Validate() error {
 		return fmt.Errorf("%w, last name must not be empty", ErrValidationFailed)
 	case u.NickName:
 		return fmt.Errorf("%w, nick name must not be empty", ErrValidationFailed)
-	case u.Password:
-		return fmt.Errorf("%w, password must not be empty", ErrValidationFailed)
 	case u.Email:
 		return fmt.Errorf("%w, email name must not be empty", ErrValidationFailed)
+	}
+
+	if len(u.Password) < 7 {
+		return fmt.Errorf("%w, password must be at least 7 charecters long", ErrValidationFailed)
 	}
 
 	pattern := "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]" +

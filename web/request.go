@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 // Request is a endpoint request struct
@@ -36,12 +38,22 @@ func (r *Request) UnmarshalBodyJSON(v interface{}) error {
 
 // GetPathParamsString is getting Path parameters of type string
 func (r *Request) GetPathParamsString(key string) string {
-	return r.req.FormValue(key)
+	v, ok := r.req.Context().Value(key).(string)
+	if !ok {
+		return mux.Vars(r.req)[key]
+	}
+
+	return v
 }
 
 // GetPathParamsInt is getting Path parameters of type int
 func (r *Request) GetPathParamsInt(key string) *int {
-	return getParamInt(r.req.FormValue(key))
+	v, ok := r.req.Context().Value(key).(int)
+	if !ok {
+		return getParamInt(mux.Vars(r.req)[key])
+	}
+
+	return &v
 }
 
 // GetQueryParamsString is getting Query parameters of type string

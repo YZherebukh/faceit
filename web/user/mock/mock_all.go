@@ -35,16 +35,16 @@ func (m *Mockall) EXPECT() *MockallMockRecorder {
 }
 
 // All mocks base method
-func (m *Mockall) All(ctx context.Context, filter, title string) ([]entity.User, error) {
+func (m *Mockall) All(ctx context.Context, title, filter string) ([]entity.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "All", ctx, filter, title)
+	ret := m.ctrl.Call(m, "All", ctx, title, filter)
 	ret0, _ := ret[0].([]entity.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // All indicates an expected call of All
-func (mr *MockallMockRecorder) All(ctx, filter, title interface{}) *gomock.Call {
+func (mr *MockallMockRecorder) All(ctx, title, filter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "All", reflect.TypeOf((*Mockall)(nil).All), ctx, filter, title)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "All", reflect.TypeOf((*Mockall)(nil).All), ctx, title, filter)
 }

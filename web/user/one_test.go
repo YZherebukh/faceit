@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"testing"
 
 	"github.com/faceit/test/entity"
@@ -27,7 +26,6 @@ var (
 
 type testCaseOne struct {
 	url                string
-	urlParams          map[string][]string
 	method             string
 	expectedResponse   *entity.UserResponse
 	expectedStatusCode int
@@ -49,14 +47,13 @@ func TestOne(t *testing.T) {
 	t.Run("positive_200", func(t *testing.T) {
 		tc := testCaseOne{
 			url:                oneURL,
-			urlParams:          map[string][]string{"id": {strconv.Itoa(testUserID)}},
 			method:             http.MethodGet,
 			expectedResponse:   &testUserResponse,
 			expectedStatusCode: http.StatusOK,
 		}
 
 		ctr := gomock.NewController(t)
-		ctx := context.Background()
+		ctx := context.WithValue(context.Background(), "id", testUserID)
 
 		mockLogger := mock_logger.NewMocklog(ctr)
 		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
@@ -66,7 +63,6 @@ func TestOne(t *testing.T) {
 		mockClientOne.EXPECT().One(ctx, testUserID).Return(testUser, nil)
 
 		req := httptest.NewRequest(tc.method, tc.url, nil).WithContext(ctx)
-		req.PostForm = tc.urlParams
 
 		w := httptest.NewRecorder()
 
@@ -75,10 +71,9 @@ func TestOne(t *testing.T) {
 		tc.checkresult(t, w)
 	})
 
-	t.Run("positive_400_missing_userId", func(t *testing.T) {
+	t.Run("negative_400_missing_userId", func(t *testing.T) {
 		tc := testCaseOne{
 			url:                oneURL,
-			urlParams:          map[string][]string{"id": {strconv.Itoa(testUserID)}},
 			method:             http.MethodGet,
 			expectedStatusCode: http.StatusBadRequest,
 		}
@@ -102,16 +97,15 @@ func TestOne(t *testing.T) {
 		tc.checkresult(t, w)
 	})
 
-	t.Run("positive_404_no_content", func(t *testing.T) {
+	t.Run("negative_404_no_content", func(t *testing.T) {
 		tc := testCaseOne{
 			url:                oneURL,
-			urlParams:          map[string][]string{"id": {strconv.Itoa(testUserID)}},
 			method:             http.MethodGet,
 			expectedStatusCode: http.StatusNotFound,
 		}
 
 		ctr := gomock.NewController(t)
-		ctx := context.Background()
+		ctx := context.WithValue(context.Background(), "id", testUserID)
 
 		mockLogger := mock_logger.NewMocklog(ctr)
 		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
@@ -122,7 +116,6 @@ func TestOne(t *testing.T) {
 		mockClientOne.EXPECT().One(ctx, testUserID).Return(entity.User{}, entity.ErrNotFound)
 
 		req := httptest.NewRequest(tc.method, tc.url, nil).WithContext(ctx)
-		req.PostForm = tc.urlParams
 
 		w := httptest.NewRecorder()
 
@@ -134,13 +127,12 @@ func TestOne(t *testing.T) {
 	t.Run("negative_500_client_one_error", func(t *testing.T) {
 		tc := testCaseOne{
 			url:                oneURL,
-			urlParams:          map[string][]string{"id": {strconv.Itoa(testUserID)}},
 			method:             http.MethodGet,
 			expectedStatusCode: http.StatusInternalServerError,
 		}
 
 		ctr := gomock.NewController(t)
-		ctx := context.Background()
+		ctx := context.WithValue(context.Background(), "id", testUserID)
 
 		mockLogger := mock_logger.NewMocklog(ctr)
 		mockLogger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
@@ -152,7 +144,6 @@ func TestOne(t *testing.T) {
 		mockClientOne.EXPECT().One(ctx, testUserID).Return(entity.User{}, errTest)
 
 		req := httptest.NewRequest(tc.method, tc.url, nil).WithContext(ctx)
-		req.PostForm = tc.urlParams
 
 		w := httptest.NewRecorder()
 

@@ -63,20 +63,6 @@ func (mr *MockclientMockRecorder) Update(ctx, u interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*Mockclient)(nil).Update), ctx, u)
 }
 
-// Delete mocks base method
-func (m *Mockclient) Delete(ctx context.Context, id int) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Delete indicates an expected call of Delete
-func (mr *MockclientMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*Mockclient)(nil).Delete), ctx, id)
-}
-
 // One mocks base method
 func (m *Mockclient) One(ctx context.Context, id int) (entity.User, error) {
 	m.ctrl.T.Helper()
@@ -90,6 +76,20 @@ func (m *Mockclient) One(ctx context.Context, id int) (entity.User, error) {
 func (mr *MockclientMockRecorder) One(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "One", reflect.TypeOf((*Mockclient)(nil).One), ctx, id)
+}
+
+// Delete mocks base method
+func (m *Mockclient) Delete(ctx context.Context, id int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete
+func (mr *MockclientMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*Mockclient)(nil).Delete), ctx, id)
 }
 
 // All mocks base method
@@ -137,6 +137,44 @@ func (mr *MockclientMockRecorder) AllWithFilter(ctx, title, filter interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AllWithFilter", reflect.TypeOf((*Mockclient)(nil).AllWithFilter), ctx, title, filter)
 }
 
+// MockpasswordClient is a mock of passwordClient interface
+type MockpasswordClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockpasswordClientMockRecorder
+}
+
+// MockpasswordClientMockRecorder is the mock recorder for MockpasswordClient
+type MockpasswordClientMockRecorder struct {
+	mock *MockpasswordClient
+}
+
+// NewMockpasswordClient creates a new mock instance
+func NewMockpasswordClient(ctrl *gomock.Controller) *MockpasswordClient {
+	mock := &MockpasswordClient{ctrl: ctrl}
+	mock.recorder = &MockpasswordClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockpasswordClient) EXPECT() *MockpasswordClientMockRecorder {
+	return m.recorder
+}
+
+// One mocks base method
+func (m *MockpasswordClient) One(ctx context.Context, id int) (entity.Password, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "One", ctx, id)
+	ret0, _ := ret[0].(entity.Password)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// One indicates an expected call of One
+func (mr *MockpasswordClientMockRecorder) One(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "One", reflect.TypeOf((*MockpasswordClient)(nil).One), ctx, id)
+}
+
 // Mockhasher is a mock of hasher interface
 type Mockhasher struct {
 	ctrl     *gomock.Controller
@@ -160,18 +198,19 @@ func (m *Mockhasher) EXPECT() *MockhasherMockRecorder {
 	return m.recorder
 }
 
-// HashAndSalt mocks base method
-func (m *Mockhasher) HashAndSalt(password string) error {
+// Hash mocks base method
+func (m *Mockhasher) Hash(password, salt string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "HashAndSalt", password)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "Hash", password, salt)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// HashAndSalt indicates an expected call of HashAndSalt
-func (mr *MockhasherMockRecorder) HashAndSalt(password interface{}) *gomock.Call {
+// Hash indicates an expected call of Hash
+func (mr *MockhasherMockRecorder) Hash(password, salt interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HashAndSalt", reflect.TypeOf((*Mockhasher)(nil).HashAndSalt), password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hash", reflect.TypeOf((*Mockhasher)(nil).Hash), password, salt)
 }
 
 // Salt mocks base method
@@ -188,16 +227,16 @@ func (mr *MockhasherMockRecorder) Salt() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Salt", reflect.TypeOf((*Mockhasher)(nil).Salt))
 }
 
-// Hashed mocks base method
-func (m *Mockhasher) Hashed() string {
+// Compare mocks base method
+func (m *Mockhasher) Compare(password, hashed string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Hashed")
-	ret0, _ := ret[0].(string)
+	ret := m.ctrl.Call(m, "Compare", password, hashed)
+	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Hashed indicates an expected call of Hashed
-func (mr *MockhasherMockRecorder) Hashed() *gomock.Call {
+// Compare indicates an expected call of Compare
+func (mr *MockhasherMockRecorder) Compare(password, hashed interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hashed", reflect.TypeOf((*Mockhasher)(nil).Hashed))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Compare", reflect.TypeOf((*Mockhasher)(nil).Compare), password, hashed)
 }

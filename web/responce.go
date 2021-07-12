@@ -52,8 +52,8 @@ func (r *Response) NoContent(ctx context.Context) *Response {
 	return r.setStatus(ctx, http.StatusNoContent)
 }
 
-// Unauthorised is setting response status code to http.StatusUnauthorized
-func (r *Response) Unauthorised(ctx context.Context) *Response {
+// Unauthorized is setting response status code to http.StatusUnauthorized
+func (r *Response) Unauthorized(ctx context.Context) *Response {
 	return r.setStatus(ctx, http.StatusUnauthorized)
 }
 

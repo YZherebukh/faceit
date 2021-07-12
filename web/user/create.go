@@ -21,6 +21,7 @@ type notifier interface {
 	Add(message entity.NotifierMessage)
 }
 
+// Create is a create users endpoint struct
 type Create struct {
 	do        create
 	resp      *web.Response
@@ -37,6 +38,7 @@ func newCreate(r *web.Response, c create, n notifier, consumers []string) *Creat
 	}
 }
 
+// // Do is reading request body and creates user in store, if request is valid
 func (c *Create) Do(r *web.Request) {
 	ctx := r.Context()
 
